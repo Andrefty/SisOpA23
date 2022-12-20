@@ -52,21 +52,31 @@ int main(int argc, char** argv) {
     int bytes_read;
     while ((bytes_read = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
       // Split string into words
-      char* word = strtok(buffer, " ");
-      while (word != NULL) {
+      int i = 0;
+      while (i < bytes_read) {
+        // Find length of next word
+        int word_length = strcspn(&buffer[i], " ");
+        i += word_length + 1;
         word_count++;
-        word = strtok(NULL, " ");
       }
+
       // Check if the last word was cut off by the buffer
       if (buffer[bytes_read - 1] != ' ') {
-      // Read the rest of the last word
-      char last_word[256];
-      int i = 0;
-      while (read(pipefd[0], &last_word[i], 1) > 0 && last_word[i] != ' ') {
-        i++;
+        // Read the rest of the last word
+        int last_word_size = 256;
+        char* last_word = malloc(last_word_size * sizeof(char));
+        int i = 0;
+        while (read(pipefd[0], &last_word[i], 1) > 0 && last_word[i] != ' ') {
+          // Increase size of last_word array if needed
+          if (i == last_word_size - 1) {
+            last_word_size *= 2;
+            last_word = realloc(last_word, last_word_size * sizeof(char));
+          }
+          i++;
+        }
+        word_count++;
+        free(last_word);
       }
-      word_count++;
-    }
     }
 
     // Wait for child to finish
