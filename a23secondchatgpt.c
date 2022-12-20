@@ -49,13 +49,24 @@ int main(int argc, char** argv) {
     // Count words
     int word_count = 0;
     char buffer[256];
-    while (read(pipefd[0], buffer, sizeof(buffer)) > 0) {
+    int bytes_read;
+    while ((bytes_read = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
       // Split string into words
       char* word = strtok(buffer, " ");
       while (word != NULL) {
         word_count++;
         word = strtok(NULL, " ");
       }
+      // Check if the last word was cut off by the buffer
+      if (buffer[bytes_read - 1] != ' ') {
+      // Read the rest of the last word
+      char last_word[256];
+      int i = 0;
+      while (read(pipefd[0], &last_word[i], 1) > 0 && last_word[i] != ' ') {
+        i++;
+      }
+      word_count++;
+    }
     }
 
     // Wait for child to finish
