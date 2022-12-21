@@ -11,6 +11,7 @@ int main(int argc, char **argv)
   if (argc < 2)
   {
     fprintf(stderr, "Eroare: com lipseste\n");
+    fprintf(stderr, "Utilizare: %s comanda\n",argv[0]);
     return 1;
   }
 
@@ -34,10 +35,10 @@ int main(int argc, char **argv)
     close(pipefd[0]);
 
     dup2(pipefd[1], STDOUT_FILENO);
-
+    close(pipefd[1]);
     execvp(argv[1], &argv[1]);
 
-    perror("Eroare: executarea com a esuat ");
+    perror(argv[1]);
     exit(1);
   }
 
@@ -45,12 +46,13 @@ int main(int argc, char **argv)
   {
 
     close(pipefd[1]);
-
+    dup2(pipefd[0],STDIN_FILENO);
+    close(pipefd[0]);
     int word_count = 0;
     char buffer[256];
     int bytes_read;
     int in_word = 0; 
-    while ((bytes_read = read(pipefd[0], buffer, sizeof(buffer))) > 0)
+    while ((bytes_read = read(STDIN_FILENO, buffer, sizeof(buffer))) > 0)
     { 
       for (int i = 0; i < bytes_read; i++)
       {
@@ -73,9 +75,6 @@ int main(int argc, char **argv)
       perror("read");
       return 1;
     }
-
-    
-    
     if (in_word)
     {
       word_count++;
