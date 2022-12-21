@@ -49,21 +49,21 @@ int main(int argc, char **argv)
     int word_count = 0;
     char buffer[256];
     int bytes_read;
-    int in_word = 0; // flag to track whether we are in a word or not
+    int in_word = 0; 
     while ((bytes_read = read(pipefd[0], buffer, sizeof(buffer))) > 0)
-    { // Count the words in the text
+    { 
       for (int i = 0; i < bytes_read; i++)
       {
         if (isspace(buffer[i]))
         {
           if (in_word)
-          { // end of a word
+          { 
             word_count++;
             in_word = 0;
           }
         }
         else
-        { // non-whitespace character
+        { 
           in_word = 1;
         }
       }
@@ -74,8 +74,8 @@ int main(int argc, char **argv)
       return 1;
     }
 
-    // If the last character in the buffer was a non-whitespace character,
-    // we need to increment the word count if we are in a word
+    
+    
     if (in_word)
     {
       word_count++;
